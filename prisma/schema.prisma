@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  googleId  String   @unique
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  trips     Trip[]
+  favorites Favorite[]
+}
+
+// the userId column on the Trip table refers to a value that matches the id column on the User table
+
+model Trip {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+
+  user      User       @relation(fields: [userId], references: [id])
+  tripParks TripPark[]
+}
+
+model TripPark {
+  id                    String @id @default(cuid())
+  tripId                String
+  parkId                String
+  stopOrder             Int
+  driveTimeFromPrevious Int?
+
+  trip Trip @relation(fields: [tripId], references: [id])
+  park Park @relation(fields: [parkId], references: [id])
+}
+
+model Favorite {
+  id     String @id @default(cuid())
+  userId String
+  parkId String
+
+  user User @relation(fields: [userId], references: [id])
+  park Park @relation(fields: [parkId], references: [id])
+}
