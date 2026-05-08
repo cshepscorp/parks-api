@@ -1,7 +1,12 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import passport from 'passport';
+import cookieParser from 'cookie-parser';
+import authRouter from './routes/auth.js';
+import parksRouter from './routes/parks.js';
 import prisma from './db.js'
+import requireAuth from './middleware/auth.js';
 
 dotenv.config();
 
@@ -14,11 +19,20 @@ app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true
 }));
-app.use(express.json()); // middleware that reads those bytes, parses them into a JavaScript object, and puts it on req.body
+app.use(express.json()); // middleware that reads those express bytes, parses them into a JavaScript object, and puts it on req.body
+app.use(cookieParser());
+app.use(passport.initialize());
+app.use('/auth', authRouter);
+app.use('/api/parks', parksRouter);
 
 // health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
+});
+
+// protected test route
+app.get('/protected', requireAuth, (req, res) => {
+  res.json({message: 'you are authenticated', user: req.user});
 });
 
 app.get('/health/db', async (req, res) => {
@@ -26,7 +40,7 @@ app.get('/health/db', async (req, res) => {
         await prisma.$queryRaw `SELECT 1`;
         res.json({ status: 'ok', database: 'connected'});
     } catch (error) {
-        res.status(500).json( {statue: 'error', database: 'disconnected'})
+        res.status(500).json( {status: 'error', database: 'disconnected'})
     }
 });
 
