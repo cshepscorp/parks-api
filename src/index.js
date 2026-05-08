@@ -5,6 +5,8 @@ import passport from 'passport';
 import cookieParser from 'cookie-parser';
 import authRouter from './routes/auth.js';
 import parksRouter from './routes/parks.js';
+import tripsRouter from './routes/trips.js';
+import favoritesRouter from './routes/favorites.js';
 import prisma from './db.js'
 import requireAuth from './middleware/auth.js';
 
@@ -24,6 +26,8 @@ app.use(cookieParser());
 app.use(passport.initialize());
 app.use('/auth', authRouter);
 app.use('/api/parks', parksRouter);
+app.use('/api/trips', tripsRouter);
+app.use('/api/favorites', favoritesRouter);
 
 // health check
 app.get('/health', (req, res) => {
