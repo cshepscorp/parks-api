@@ -33,5 +33,26 @@ router.post('/', requireAuth, async (req, res) => {
     }
 });
 
+// delete a trip
+router.delete('/:id', requireAuth, async (req, res) => {
+    const tripId = req.params.id;
+    const userId = req.user.userId;
+    try {
+        // make sure trip belongs to this user
+        const trip = await prisma.trip.findFirst({
+            where: { id: tripId, userId }
+        });
+        if (!trip) {
+            return res.status(404).json({ error: 'Trip not found' });
+        }
+        await prisma.trip.delete({
+            where: { id: tripId }
+        });
+        res.json({ message: 'Trip deleted' })
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete trip' })
+    }
+});
+
 export default router;
 
