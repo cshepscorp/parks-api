@@ -33,7 +33,6 @@ router.get('/:id', async (req, res) => {
     const parkCode = req.params.id;
 
     const url = `${BASE_URL}?parkCode=${parkCode}&api_key=${NPS_API_KEY}`;
-
     try {
         const response = await fetch(url);
         const data = await response.json();
