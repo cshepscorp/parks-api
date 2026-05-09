@@ -10,15 +10,15 @@ router.get('/', async (req, res) => {
     const state = req.query.stateCode;
 
     const params = new URLSearchParams({
-        limit: 50,
+        limit: req.query.limit || 50,
         api_key: NPS_API_KEY
     });
 
     if (keyword) params.append('q', keyword);
     if (state) params.append('stateCode', state);
 
-    const url = `${BASE_URL}?q=${params.toString()}`;
-
+    const url = `${BASE_URL}?${params.toString()}`;
+    console.log('url for search', url)
     try {
         const response = await fetch(url);
         const data = await response.json();
