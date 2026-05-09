@@ -1,16 +1,21 @@
 import passport from 'passport';
+import dotenv from 'dotenv';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import jwt from 'jsonwebtoken';
 import { Router } from 'express';
 import prisma from '../db.js';
+import requireAuth from '../middleware/auth.js';
+
+dotenv.config();
 
 const router = Router();
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5174';
 
 // configure passport with google strategy
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: 'http://localhost:3000/auth/google/callback'
+  callbackURL: `${process.env.API_URL}/auth/google/callback`
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     // find existing user or create a new one
@@ -52,9 +57,18 @@ router.get('/google/callback',
       maxAge: 60 * 60 * 1000
     });
 
-    res.redirect('http://localhost:5173');
+    res.redirect(CLIENT_URL);
   }
 );
+
+router.get('/me', requireAuth, (req, res) => {
+    res.json(req.user);
+})
+
+router.get('/logout', (req, res) => {
+    res.clearCookie('token');
+    res.redirect(process.env.CLIENT_URL);
+})
 
 router.get('/failed', (req, res) => {
   res.status(401).json({ error: 'Authentication failed' });
