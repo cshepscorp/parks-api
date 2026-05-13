@@ -12,8 +12,6 @@ import requireAuth from './middleware/auth.js';
 
 dotenv.config();
 
-console.log('DATABASE_URL prefix:', process.env.DATABASE_URL?.substring(0, 30));
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5174';
