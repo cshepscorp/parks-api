@@ -19,11 +19,11 @@ const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5174';
 
 // rate limiter middleware - limits each IP to 100 requests per 15 minutes
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100,
-    message: {error: 'Too many requests, please try again later.'},
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'production' ? 100 : 1000, // higher in dev
+  message: { error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // apply to all API routes
@@ -50,16 +50,16 @@ app.get('/health', (req, res) => {
 
 // protected test route
 app.get('/protected', requireAuth, (req, res) => {
-  res.json({message: 'you are authenticated', user: req.user});
+  res.json({ message: 'you are authenticated', user: req.user });
 });
 
 app.get('/health/db', async (req, res) => {
-    try {
-        await prisma.$queryRaw `SELECT 1`;
-        res.json({ status: 'ok', database: 'connected'});
-    } catch (error) {
-        res.status(500).json( {status: 'error', database: 'disconnected'})
-    }
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: 'ok', database: 'connected' });
+  } catch (error) {
+    res.status(500).json({ status: 'error', database: 'disconnected' })
+  }
 });
 
 // start server

@@ -8,7 +8,17 @@ const router = Router();
 router.get('/', requireAuth, async (req, res) => {
     try {
         const trips = await prisma.trip.findMany({
-            where: { userId: req.user.userId }
+            where: { userId: req.user.userId },
+            include: {
+                tripParks: {
+                    include: {
+                        park: true
+                    },
+                    orderBy: {
+                        stopOrder: 'asc'
+                    }
+                }
+            }
         });
         res.json(trips)
     } catch (error) {
@@ -45,6 +55,13 @@ router.delete('/:id', requireAuth, async (req, res) => {
         if (!trip) {
             return res.status(404).json({ error: 'Trip not found' });
         }
+        
+        // delete TripPark records first
+        await prisma.tripPark.deleteMany({
+            where: { tripId }
+        });
+
+        // then delete the trip
         await prisma.trip.delete({
             where: { id: tripId }
         });
@@ -86,6 +103,15 @@ router.post('/:tripId/parks', requireAuth, async (req, res) => {
             }
         });
 
+        // check if park already in trip
+        const existing = await prisma.tripPark.findFirst({
+            where: { tripId, parkId: park.id }
+        });
+
+        if (existing) {
+            return res.status(409).json({ error: 'Park already in trip' });
+        }
+
         // get current stop count for order
         const stopCount = await prisma.tripPark.count({
             where: { tripId }
@@ -103,7 +129,30 @@ router.post('/:tripId/parks', requireAuth, async (req, res) => {
         console.error(error);
         res.status(500).json({ error: 'Failed to add park to trip' })
     }
+});
 
+// delete a park from a trip
+router.delete('/:tripId/parks/:tripParkId', requireAuth, async (req, res) => {
+    const { tripId, tripParkId } = req.params;
+    const userId = req.user.userId;
+    try {
+        // verify trip belongs to user
+        const trip = await prisma.trip.findFirst({
+            where: { id: tripId, userId }
+        });
+
+        if (!trip) {
+            return res.status(404).json({ error: 'Trip not found' });
+        }
+
+        await prisma.tripPark.delete({
+            where: { id: tripParkId }
+        });
+
+        res.json({ message: 'Park removed from trip' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to remove park from trip' })
+    }
 });
 
 export default router;
