@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
 import authRouter from './routes/auth.js';
 import parksRouter from './routes/parks.js';
 import tripsRouter from './routes/trips.js';
@@ -15,6 +16,18 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5174';
+
+// rate limiter middleware - limits each IP to 100 requests per 15 minutes
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100,
+    message: {error: 'Too many requests, please try again later.'},
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// apply to all API routes
+app.use('/api', limiter);
 
 // middleware
 // we're storing the JWT in an HttpOnly cookie. When a browser makes a cross-origin request, it strips cookies by default as a security measure. credentials: true tells the browser "yes, include cookies on cross-origin requests to this server." Without it, your React frontend would never send the auth cookie to Express, and every request would look unauthenticated.
