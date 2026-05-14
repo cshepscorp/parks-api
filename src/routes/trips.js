@@ -43,6 +43,34 @@ router.post('/', requireAuth, async (req, res) => {
     }
 });
 
+// rename a trip
+router.patch('/:id', requireAuth, async (req, res) => {
+    const tripId = req.params.id;
+    const userId = req.user.userId;
+    const { name } = req.body;
+
+    if (!name || !name.trim()) {
+        return res.status(400).json({ error: 'Name is required' });
+    }
+
+    try {
+        const trip = await prisma.trip.findFirst({
+            where: { id: tripId, userId }
+        });
+        if (!trip) {
+            return res.status(404).json({ error: 'Trip not found' });
+        }
+
+        const updated = await prisma.trip.update({
+            where: { id: tripId },
+            data: { name: name.trim() }
+        });
+        res.json(updated);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to rename trip' });
+    }
+});
+
 // delete a trip
 router.delete('/:id', requireAuth, async (req, res) => {
     const tripId = req.params.id;
@@ -128,6 +156,35 @@ router.post('/:tripId/parks', requireAuth, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to add park to trip' })
+    }
+});
+
+// reorder parks in a trip
+router.patch('/:tripId/parks/reorder', requireAuth, async (req, res) => {
+    const { tripId } = req.params;
+    const userId = req.user.userId;
+    const { order } = req.body; // array of tripPark IDs in new order
+
+    if (!Array.isArray(order)) {
+        return res.status(400).json({ error: 'order must be an array of tripPark IDs' });
+    }
+
+    try {
+        const trip = await prisma.trip.findFirst({ where: { id: tripId, userId } });
+        if (!trip) return res.status(404).json({ error: 'Trip not found' });
+
+        await Promise.all(
+            order.map((tripParkId, index) =>
+                prisma.tripPark.update({
+                    where: { id: tripParkId },
+                    data: { stopOrder: index + 1 },
+                })
+            )
+        );
+
+        res.json({ message: 'Order updated' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to reorder parks' });
     }
 });
 

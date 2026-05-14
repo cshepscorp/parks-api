@@ -41,6 +41,18 @@ router.get('/:id', async (req, res) => {
     } catch (error) {
         res.status(500).json({error: `could not locate park with code ${parkCode}`})
     }
-})
+});
+
+router.get('/:id/alerts', async (req, res) => {
+    const parkCode = req.params.id;
+    const url = `https://developer.nps.gov/api/v1/alerts?parkCode=${parkCode}&limit=10&api_key=${NPS_API_KEY}`;
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        res.json(data.data || []);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch alerts' });
+    }
+});
 
 export default router;
