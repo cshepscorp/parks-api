@@ -11,6 +11,7 @@ router.get('/', async (req, res) => {
 
     const params = new URLSearchParams({
         limit: req.query.limit || 50,
+        start: req.query.start || 0,
         api_key: NPS_API_KEY
     });
 

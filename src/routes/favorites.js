@@ -55,12 +55,12 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 // remove a favorite park for a user
-router.delete('/:parkId', requireAuth, async (req, res) => {
+router.delete('/:npsId', requireAuth, async (req, res) => {
     const userId = req.user.userId;
-    const { parkId } = req.params;
+    const { npsId } = req.params;
     try {
         await prisma.favorite.deleteMany({
-            where: { userId, parkId }
+            where: { userId, park: { npsId } }
         });
         res.json({ message: 'Favorite removed' });
     } catch (error) {
