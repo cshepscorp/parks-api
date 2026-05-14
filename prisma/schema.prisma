@@ -64,6 +64,7 @@ model Park {
   lat         Float
   lng         Float
   amenities   Json?
+  imageUrl    String?
 
   tripParks TripPark[]
   favorites Favorite[]

@@ -31,7 +31,8 @@ router.post('/', requireAuth, async (req, res) => {
                 states: req.body.states.split(','),  // "CA" → ["CA"], "UT,AZ" → ["UT", "AZ"]
                 lat: parseFloat(req.body.latitude),
                 lng: parseFloat(req.body.longitude),
-                description: req.body.description
+                description: req.body.description,
+                imageUrl: req.body.imageUrl || null
             }
         });
         // console.log('park upserted:', park.id);
@@ -47,6 +48,20 @@ router.post('/', requireAuth, async (req, res) => {
         console.error('favorites error:', error);
         res.status(500).json({ error: 'Failed to add park to favorites' })
     }
-})
+});
+
+// remove a favorite park for a user
+router.delete('/:parkId', requireAuth, async (req, res) => {
+    const userId = req.user.userId;
+    const { parkId } = req.params;
+    try {
+        await prisma.favorite.deleteMany({
+            where: { userId, parkId }
+        });
+        res.json({ message: 'Favorite removed' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to remove favorite' });
+    }
+});
 
 export default router;
