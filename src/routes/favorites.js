@@ -24,7 +24,11 @@ router.post('/', requireAuth, async (req, res) => {
     try {
         const park = await prisma.park.upsert({
             where: { npsId: req.body.npsId },
-            update: { name: req.body.name, states: req.body.states.split(',') },
+            update: {
+                name: req.body.name,
+                states: req.body.states.split(','),
+                imageUrl: req.body.imageUrl || null
+            },
             create: {
                 npsId: req.body.npsId,
                 name: req.body.name,
