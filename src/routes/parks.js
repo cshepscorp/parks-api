@@ -18,8 +18,10 @@ router.get('/', async (req, res) => {
     if (keyword) params.append('q', keyword);
     if (state) params.append('stateCode', state);
 
-    const url = `${BASE_URL}?${params.toString()}`;
-    console.log('url for search', url)
+    // Append parkCode with literal commas — URLSearchParams encodes them as %2C which NPS rejects
+    let url = `${BASE_URL}?${params.toString()}`;
+    if (req.query.parkCodes) url += `&parkCode=${req.query.parkCodes}`;
+
     try {
         const response = await fetch(url);
         const data = await response.json();
