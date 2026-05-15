@@ -43,6 +43,27 @@ router.post('/', requireAuth, async (req, res) => {
     }
 });
 
+// get a single trip
+router.get('/:id', requireAuth, async (req, res) => {
+    const tripId = req.params.id;
+    const userId = req.user.userId;
+    try {
+        const trip = await prisma.trip.findFirst({
+            where: { id: tripId, userId },
+            include: {
+                tripParks: {
+                    include: { park: true },
+                    orderBy: { stopOrder: 'asc' }
+                }
+            }
+        });
+        if (!trip) return res.status(404).json({ error: 'Trip not found' });
+        res.json(trip);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch trip' });
+    }
+});
+
 // rename a trip
 router.patch('/:id', requireAuth, async (req, res) => {
     const tripId = req.params.id;
