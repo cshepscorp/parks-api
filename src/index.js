@@ -8,6 +8,7 @@ import authRouter from './routes/auth.js';
 import parksRouter from './routes/parks.js';
 import tripsRouter from './routes/trips.js';
 import favoritesRouter from './routes/favorites.js';
+import savedActivitiesRouter from './routes/savedActivities.js';
 import prisma from './db.js'
 import requireAuth from './middleware/auth.js';
 
@@ -42,6 +43,7 @@ app.use('/auth', authRouter);
 app.use('/api/parks', parksRouter);
 app.use('/api/trips', tripsRouter);
 app.use('/api/favorites', favoritesRouter);
+app.use('/api/saved-activities', savedActivitiesRouter);
 
 // NPS activities list — used by frontend to resolve activity IDs for park filtering
 app.get('/api/activities', async (req, res) => {

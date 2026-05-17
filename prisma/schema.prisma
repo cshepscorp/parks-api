@@ -19,8 +19,9 @@ model User {
   email     String   @unique
   createdAt DateTime @default(now())
 
-  trips     Trip[]
-  favorites Favorite[]
+  trips           Trip[]
+  favorites       Favorite[]
+  savedActivities SavedActivity[]
 }
 
 // the userId column on the Trip table refers to a value that matches the id column on the User table
@@ -68,4 +69,20 @@ model Park {
 
   tripParks TripPark[]
   favorites Favorite[]
+}
+
+model SavedActivity {
+  id           String  @id @default(cuid())
+  userId       String
+  npsId        String
+  parkNpsId    String
+  parkName     String?
+  title        String
+  imageUrl     String?
+  url          String?
+  activityType String  @default("trail")
+
+  user         User    @relation(fields: [userId], references: [id])
+
+  @@unique([userId, npsId])
 }
