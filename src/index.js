@@ -43,6 +43,17 @@ app.use('/api/parks', parksRouter);
 app.use('/api/trips', tripsRouter);
 app.use('/api/favorites', favoritesRouter);
 
+// NPS activities list — used by frontend to resolve activity IDs for park filtering
+app.get('/api/activities', async (req, res) => {
+    try {
+        const response = await fetch(`https://developer.nps.gov/api/v1/activities?limit=100&api_key=${process.env.NPS_API_KEY}`);
+        const data = await response.json();
+        res.json(data.data || []);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch activities' });
+    }
+});
+
 // health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });

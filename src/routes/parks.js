@@ -17,6 +17,7 @@ router.get('/', async (req, res) => {
 
     if (keyword) params.append('q', keyword);
     if (state) params.append('stateCode', state);
+    if (req.query.activities) params.append('activities', req.query.activities);
 
     // Append parkCode with literal commas — URLSearchParams encodes them as %2C which NPS rejects
     let url = `${BASE_URL}?${params.toString()}`;
@@ -54,6 +55,18 @@ router.get('/:id/alerts', async (req, res) => {
         res.json(data.data || []);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch alerts' });
+    }
+});
+
+router.get('/:id/thingstodo', async (req, res) => {
+    const parkCode = req.params.id;
+    const url = `https://developer.nps.gov/api/v1/thingstodo?parkCode=${parkCode}&limit=50&api_key=${NPS_API_KEY}`;
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        res.json(data.data || []);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch things to do' });
     }
 });
 
