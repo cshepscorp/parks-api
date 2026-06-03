@@ -33,7 +33,7 @@ app.use('/api', limiter);
 // middleware
 // we're storing the JWT in an HttpOnly cookie. When a browser makes a cross-origin request, it strips cookies by default as a security measure. credentials: true tells the browser "yes, include cookies on cross-origin requests to this server." Without it, your React frontend would never send the auth cookie to Express, and every request would look unauthenticated.
 app.use(cors({
-  origin: CLIENT_URL,
+  origin: process.env.NODE_ENV === 'production' ? CLIENT_URL : /^http:\/\/localhost:\d+$/,
   credentials: true
 }));
 app.use(express.json()); // middleware that reads those express bytes, parses them into a JavaScript object, and puts it on req.body
