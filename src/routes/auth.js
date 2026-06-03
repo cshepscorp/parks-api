@@ -47,14 +47,14 @@ router.get('/google/callback',
     const token = jwt.sign(
       { userId: req.user.id, email: req.user.email },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '7d' }
     );
 
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 60 * 60 * 1000
+      maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
     res.redirect(CLIENT_URL);
